@@ -2,6 +2,11 @@ pipeline {
   // Use any available agent
   agent any
 
+  environment {
+    // Set environment variable VERSION to Jenkins Build ID
+    VERSION = "${env.BUILD_ID}"
+  }
+
   stages {
     // Sonar quality check stage
     stage("Sonar Quality Check") {
@@ -33,5 +38,23 @@ pipeline {
         }
       }
     }
-  }
+    
+        // Build and push Docker image stage
+        stage("Docker Build & Push") {
+            steps {
+                script {
+                    // Use Docker commands to build, tag, login, push, and clean up
+                    withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
+                        sh '''
+                            docker build -t 3.108.41.178:8083/springapp:${VERSION} .
+                            docker login -u admin -p $docker_password 3.108.41.178:8083
+                            docker push 3.108.41.178:8083/springapp:${VERSION}
+                            docker rmi 3.108.41.178:8083/springapp:${VERSION}
+                        '''
+                    }
+                }
+            }
+        }
+    }
 }
+
