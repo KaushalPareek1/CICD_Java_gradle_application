@@ -38,28 +38,34 @@ pipeline {
         }
       }
     }
-    
-        // Build and push Docker image stage
-        stage("Docker Build & Push") {
-            steps {
-                script {
-                    // Use Docker commands to build, tag, login, push, and clean up
-                    withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
-                        sh '''
-                            docker build -t 3.108.41.178:8083/springapp:${VERSION} .
-                            docker login -u admin -p $docker_password 3.108.41.178:8083
-                            docker push 3.108.41.178:8083/springapp:${VERSION}
-                            docker rmi 3.108.41.178:8083/springapp:${VERSION}
-                        '''
-                    }
-                }
-            }
-        }
-                post {
-		always {
-			mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "abcy@myyahoo.com";  
-		}
-	}
-    }
-}
 
+    // Build and push Docker image stage
+    stage("Docker Build & Push") {
+        steps {
+        script {
+          // Use Docker commands to build, tag, login, push, and clean up
+          withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
+            sh '''
+              docker build -t 3.108.41.178:8083/springapp:${VERSION} .
+              docker login -u admin -p $docker_password 
+              docker push 3.108.41.178:8083/springapp:${VERSION}
+              docker rmi 3.108.41.178:8083/springapp:${VERSION}
+            '''
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      // Use a secure method to store and retrieve email credentials
+      emailext (
+        subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
+        body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}",
+        to: "abcy@myyahoo.com",
+        mimeType: 'text/html'
+      )
+    }
+  }
+}
