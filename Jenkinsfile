@@ -45,7 +45,7 @@ pipeline {
           // Use Docker commands to build, tag, login, push, and clean up
           withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
             sh '''
-              docker build -t 13.201.6.4:8083/springapp:${VERSION} .
+              docker buildx build -t 13.201.6.4:8083/springapp:${VERSION} .
               echo "$docker_password" | script -q /dev/null docker login -u admin --password-stdin
               docker push 13.201.6.4:8083/springapp:${VERSION}
               docker rmi 13.201.6.4:8083/springapp:${VERSION}
