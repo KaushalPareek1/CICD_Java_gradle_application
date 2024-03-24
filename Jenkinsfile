@@ -5,6 +5,7 @@ pipeline {
   environment {
     // Set environment variable VERSION to Jenkins Build ID
     VERSION = "${env.BUILD_ID}"
+    DOCKER_REGISTRY = "13.201.6.4:8083"  // Replace with your actual registry address
   }
 
   stages {
@@ -37,17 +38,18 @@ pipeline {
         }
       }
     }
-   stage("Docker Build & Push") {
-            steps {
-                script {
-                    // Use Docker commands to build, tag, login, push, and clean up
-                  {
-                        sh '''
-                            docker build -t 13.201.6.4:8083/springapp:${VERSION} .
-                            docker login -u admin -p ${docker_pass} 13.201.6.4:8083
-                            docker push 13.201.6.4:8083/springapp:${VERSION}
-                            docker rmi 13.201.6.4:8083/springapp:${VERSION}
-                        '''
+
+    stage("Docker Build & Push") {
+      steps {
+        script {
+          // Use Docker commands to build, tag, login, push, and clean up
+          withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh '''
+              docker build -t ${DOCKER_REGISTRY}/springapp:${VERSION} .
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
+              docker push ${DOCKER_REGISTRY}/springapp:${VERSION}
+              docker rmi ${DOCKER_REGISTRY}/springapp:${VERSION}
+            '''
           }
         }
       }
