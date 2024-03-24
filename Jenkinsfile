@@ -25,7 +25,6 @@ pipeline {
             // Run SonarQube analysis with gradlew
             sh './gradlew sonarqube'
           }
-
           // Timeout after 1 hour
           timeout(time: 1, unit: 'HOURS') {
             // Wait for SonarQube analysis and get quality gate status
@@ -54,18 +53,6 @@ pipeline {
           }
         }
       }
-    }
-  }
-
-  post {
-    always {
-      // Use a secure method to store and retrieve email credentials
-      emailext (
-        subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
-        body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}",
-        to: "abcy@myyahoo.com",
-        mimeType: 'text/html'
-      )
     }
   }
 }
