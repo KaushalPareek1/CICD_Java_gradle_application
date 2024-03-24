@@ -38,15 +38,15 @@ pipeline {
       }
     }
 
-    // Build and push Docker image stage
+   // Build and push Docker image stage
     stage("Docker Build & Push") {
-        steps {
+      steps {
         script {
           // Use Docker commands to build, tag, login, push, and clean up
           withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
             sh '''
               docker build -t 13.201.6.4:8083/springapp:${VERSION} .
-              docker login -u admin -p $docker_pass 
+              echo $docker_password | docker login -u admin --password-stdin
               docker push 13.201.6.4:8083/springapp:${VERSION}
               docker rmi 13.201.6.4:8083/springapp:${VERSION}
             '''
