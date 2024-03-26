@@ -54,7 +54,8 @@ pipeline {
         }
       }
     }	
-      post {
+  }
+     post {
             always {
                  mail(
                  bcc: '',
@@ -71,8 +72,6 @@ pipeline {
                  subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
                  to: "yahooabc704@gmail.com"
                )
-      }
-    }
-  }
+             }
+         }
 }
-
