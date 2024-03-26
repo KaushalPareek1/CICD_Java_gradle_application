@@ -5,7 +5,7 @@ pipeline {
   environment {
     // Set environment variable VERSION to Jenkins Build ID
     VERSION = "${env.BUILD_ID}"
-    DOCKER_REGISTRY = "13.201.6.4:8083"  // Replace with your actual registry address
+    DOCKER_REGISTRY = "43.205.236.230:8083"  // Replace with your actual registry address
   }
 
   stages {
