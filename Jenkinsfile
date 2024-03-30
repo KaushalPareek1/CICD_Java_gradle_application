@@ -5,7 +5,7 @@ pipeline {
   environment {
     // Set environment variable VERSION to Jenkins Build ID
     VERSION = "${env.BUILD_ID}"
-    DOCKER_REGISTRY = "3.111.171.79:8083"  // Replace with your actual registry address
+    DOCKER_REGISTRY = "13.232.226.101:8083"  // Replace with your actual registry address
   }
 
   stages {
@@ -43,7 +43,7 @@ pipeline {
       steps {
         script {
           // Use Docker commands to build, tag, login, push, and clean up
-          withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+          withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
             sh '''
               docker build -t ${DOCKER_REGISTRY}/springapp:${VERSION} .
               docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
@@ -54,5 +54,16 @@ pipeline {
         }
       }
     }	
+      stage('indentifying misconfigs using datree in helm charts'){
+            steps{
+                script{
+                    dir('kubernetes/') {
+                         {
+                           sh 'helm datree test myapp/'
+                         }
+                 }
+             }
+          }
+      }
   }
 }
