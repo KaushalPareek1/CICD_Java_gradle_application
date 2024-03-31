@@ -1,7 +1,7 @@
 # Default values for myapp.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-
+apiVersion: v1
 replicaCount: 2
 
 image:
@@ -14,3 +14,6 @@ service:
   type: NodePort
   port: 8080
 
+policies:
+   readOnlyRootFilesystem: true
+   allowPrivilegeEscalation: false
