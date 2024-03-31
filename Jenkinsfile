@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     VERSION = "${env.BUILD_ID}"
-    DOCKER_REGISTRY = "13.232.226.101:8083"  // Replace with your actual registry address
+    DOCKER_REGISTRY = "13.233.89.141:8083"  // Replace with your actual registry address
   }
 
   stages {
@@ -40,17 +40,7 @@ pipeline {
           }
         }
       }
-    }
-
-    stage('Identifying Misconfigs Using Datree in Helm Charts') { // Corrected stage name
-      steps {
-        script {
-          dir('kubernetes/') {
-            sh 'helm datree test myapp/'
-          }
-        }
-      }
-    }
+    }  
   }
 }
 
