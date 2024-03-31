@@ -22,8 +22,8 @@ spec:
           command: ["/bin/sh"]
           args: ["-c","sh /usr/local/tomcat/bin/startup.sh;while true; do echo hello; sleep 10;done"]
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          # readOnlyRootFilesystem: true
-          # allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
 
           ports:
             - name: http
