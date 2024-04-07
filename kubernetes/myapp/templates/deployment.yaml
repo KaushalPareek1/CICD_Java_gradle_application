@@ -22,9 +22,9 @@ spec:
           command: ["/bin/sh"]
           args: ["-c","sh /usr/local/tomcat/bin/startup.sh;while true; do echo hello; sleep 10;done"]
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          readOnlyRootFilesystem: false
-          allowPrivilegeEscalation: true
-
+          securityContext:  # Add securityContext for each container
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
           ports:
             - name: http
               containerPort: 8080

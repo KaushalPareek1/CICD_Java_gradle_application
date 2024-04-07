@@ -5,15 +5,10 @@ apiVersion: v1
 replicaCount: 2
 
 image:
-  repository: IMAGE_NAME
+  repository: your/image/repository
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: IMAGE_TAG
+  tag: latest  # or the specific tag you want to use
 
 service:
   type: NodePort
   port: 8080
-
-policies:
-   readOnlyRootFilesystem: true
-   allowPrivilegeEscalation: false
