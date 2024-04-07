@@ -12,3 +12,7 @@ image:
 service:
   type: NodePort
   port: 8080
+datree:
+  offline: true
+  local: true
+
