@@ -44,9 +44,6 @@ pipeline {
      stage('Identifying Misconfigs Using Datree in Helm Charts') { // Corrected stage name
       steps {
         script {
-	  // Set Datree environment variables
-             env.DATREE_OFFLINE = 'true'
-             env.DATREE_LOCAL = 'true'
           dir('kubernetes/') {
             sh 'helm datree test myapp/'
           }
