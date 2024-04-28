@@ -7,7 +7,7 @@ replicaCount: 2
 image:
   repository: your/image/repository
   pullPolicy: IfNotPresent
-  tag: latest  # or the specific tag you want to use
+  tag: 1.24  # Update this to a specific version
 
 service:
   type: NodePort
