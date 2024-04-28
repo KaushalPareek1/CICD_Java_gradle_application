@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     VERSION = "${env.BUILD_ID}"
-    DOCKER_REGISTRY = "65.1.1.235:8083"  // Replace with your actual registry address
+    DOCKER_REGISTRY = "13.233.206.219:8083"  // Replace with your actual registry address
   }
 
   stages {
