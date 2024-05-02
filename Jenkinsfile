@@ -53,28 +53,29 @@ pipeline {
     }
     
     stage('pushing the helm charts to nexus'){
-      steps{
-        script{
-          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-            dir('kubernetes/') {
-              sh '''
-                helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
-                tar -czvf myapp-${helmversion}.tgz myapp/
-                # Check for successful upload before cleanup
-                if (curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -v -X POST http://13.232.186.61:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz) then
-                  echo 'Helm chart uploaded successfully!'
-                else
-                  echo 'Helm chart upload failed!'
-                  // Handle upload failure here (e.g., error notification)
-                fi
-                rm myapp-${helmversion}.tgz
-              '''
-            }
-          }
+  steps{
+    script{
+      withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+        dir('kubernetes/') {
+          sh '''
+            helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
+            tar -czvf myapp-${helmversion}.tgz myapp/
+            # Check for successful login before pushing
+            if docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}; then
+              curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${DOCKER_REGISTRY}:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz
+              echo 'Helm chart uploaded successfully!'
+            else
+              echo 'Docker login failed!'
+              echo 'Helm chart upload failed!'
+              // Handle upload failure here (e.g., error notification)
+            fi
+            rm myapp-${helmversion}.tgz
+          '''
         }
       }
     }
   }
+}
   
   post {
     always {
