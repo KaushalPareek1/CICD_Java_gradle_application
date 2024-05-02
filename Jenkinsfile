@@ -41,7 +41,8 @@ pipeline {
         }
       }
     }
-     stage('Identifying Misconfigs Using Datree in Helm Charts') { // Corrected stage name
+    
+    stage('Identifying Misconfigs Using Datree in Helm Charts') { // Corrected stage name
       steps {
         script {
           dir('kubernetes/') {
@@ -50,35 +51,35 @@ pipeline {
         }
       }
     }
-  }
+    
     stage('pushing the helm charts to nexus'){
-    steps{
-      script{
-        withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
-          dir('kubernetes/') {
-            sh '''
-              helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
-              tar -czvf myapp-${helmversion}.tgz myapp/
-              # Check for successful upload before cleanup
-              if (curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -v -X POST http://13.232.186.61:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz) then
-                echo 'Helm chart uploaded successfully!'
-              else
-                echo 'Helm chart upload failed!'
-                // Handle upload failure here (e.g., error notification)
-              fi
-              rm myapp-${helmversion}.tgz
-            '''
+      steps{
+        script{
+          withCredentials([usernamePassword(credentialsId: 'nexus-credentials', usernameVariable: 'NEXUS_USERNAME', passwordVariable: 'NEXUS_PASSWORD')]) {
+            dir('kubernetes/') {
+              sh '''
+                helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
+                tar -czvf myapp-${helmversion}.tgz myapp/
+                # Check for successful upload before cleanup
+                if (curl -u ${NEXUS_USERNAME}:${NEXUS_PASSWORD} -v -X POST http://13.232.186.61:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz) then
+                  echo 'Helm chart uploaded successfully!'
+                else
+                  echo 'Helm chart upload failed!'
+                  // Handle upload failure here (e.g., error notification)
+                fi
+                rm myapp-${helmversion}.tgz
+              '''
             }
           }
         }
       }
     }
-  }     
-	post {
-		always {
-			mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
-		}
-	}
- }
-
+  }
+  
+  post {
+    always {
+      mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
+    }
+  }
+}
 
