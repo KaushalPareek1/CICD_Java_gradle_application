@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     VERSION = "${env.BUILD_ID}"
+    IP = "15.206.84.190"
     DOCKER_REGISTRY = "15.206.84.190:8083"  // Replace with your actual registry address
   }
 
@@ -62,7 +63,7 @@ pipeline {
               tar -czvf myapp-${helmversion}.tgz myapp/
               # Check for successful login before pushing
               if docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}; then
-              curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${DOCKER_REGISTRY}:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz
+              curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz
               echo 'Helm chart uploaded successfully!'
               else
               echo 'Docker login failed!'
