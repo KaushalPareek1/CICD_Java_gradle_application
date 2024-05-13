@@ -78,9 +78,19 @@ pipeline {
         }
       }
     }
-  
+      stage('Deploying application on k8s cluster') {
+            steps {
+               script{
+                   withCredentials([usernamePassword(credentialsId: 'kubernetes-token')]) {
+                        dir('kubernetes/') {
+                          sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/ ' 
+                        }
+                    }
+               }
+            }
+        }
   }
-  
+     
   post {
     always {
       mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
