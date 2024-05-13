@@ -6,6 +6,7 @@ pipeline {
     IP = "13.233.120.38"
     DOCKER_REGISTRY = "${IP}:8083"  // Replace with your actual registry address
     KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
+    KUBE_SERVER_URL = "https://172.31.2.160:6443"
   }
 
   stages {
