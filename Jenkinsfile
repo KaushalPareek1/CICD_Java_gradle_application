@@ -80,18 +80,18 @@ pipeline {
       }
     }
       stage('Deploying application on k8s cluster') {
-            steps {
-               script{
-                   dir('kubernetes/') {
-                        sh 'kubectl config set-cluster k8s --server=${KUBE_URL} --insecure-skip-tls-verify=true'
-                        sh 'kubectl config set-credentials user --token=${KUBE_TOKEN}'
-                        sh 'kubectl config set-context default --cluster=k8s --user=user'
-                        sh 'kubectl config use-context default'
-                        sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/ ' 
-                    }
-               }
-            }
+    steps {
+        script {
+            dir('kubernetes/') {
+                sh "kubectl config set-cluster k8s --server=${KUBE_SERVER_URL} --insecure-skip-tls-verify=true"
+                sh 'kubectl config set-credentials user --token=${KUBE_TOKEN}'
+                sh 'kubectl config set-context default --cluster=k8s --user=user'
+                sh 'kubectl config use-context default'
+                sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/ ' 
+              }
+           }
         }
+     }
   }
      
   post {
