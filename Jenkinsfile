@@ -80,8 +80,8 @@ pipeline {
         }
       }
     }
-      stage('Deploying application on k8s cluster') {
-    steps {
+     stage('Deploying application on k8s cluster') {
+       steps {
         script {
             dir('kubernetes/') {
                 kubeconfig(credentialsId: 'kubernetes-token', serverUrl: 'https://${kube_IP}:8443') {
