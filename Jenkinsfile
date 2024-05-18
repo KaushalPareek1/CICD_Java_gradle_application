@@ -6,7 +6,7 @@ pipeline {
     IP = "13.233.120.38"
     DOCKER_REGISTRY = "${IP}:8083"  // Replace with your actual registry address
     KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
-    KUBE_SERVER_URL = "https://172.31.2.160:6443"
+    kube_IP = "kubenetes IP"
   }
 
   stages {
@@ -84,10 +84,7 @@ pipeline {
     steps {
         script {
             dir('kubernetes/') {
-                sh "kubectl config set-cluster k8s --server=${KUBE_SERVER_URL} --insecure-skip-tls-verify=true"
-                sh 'kubectl config set-credentials user --token=${KUBE_TOKEN}'
-                sh 'kubectl config set-context default --cluster=k8s --user=user'
-                sh 'kubectl config use-context default'
+                kubeconfig(credentialsId: 'kubernetes-token', serverUrl: 'https://${kube_IP}:8443') {
                 sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/ ' 
               }
            }
