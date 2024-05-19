@@ -1,61 +1,12 @@
-pipeline {
-    agent {
-        kubernetes {
-            yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: maven
-    image: maven:3.6.3-jdk-8
-    command:
-    - cat
-    tty: true
-  - name: docker
-    image: docker:19.03.12
-    command:
-    - cat
-    tty: true
-  - name: helm
-    image: alpine/helm:3.2.1
-    command:
-    - cat
-    tty: true
-"""
-        }
-    }
+pipeline{
+    agent any 
     environment {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "my-docker-registry:5000" // Replace with your actual registry address
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
         kube_IP = "172.31.42.5"
     }
-    stages {
-        stage('Debug Pod') {
-            steps {
-                container('maven') {
-                    sh 'echo "Debugging pod..."'
-                    sh 'env'
-                    sh 'kubectl get pods'
-                }
-            }
-        }
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build and Test') {
-            steps {
-                container('maven') {
-                    sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage('Sonar Quality Check') {
+      stage('Sonar Quality Check') {
             steps {
                 container('maven') {
                     script {
