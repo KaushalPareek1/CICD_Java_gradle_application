@@ -8,6 +8,11 @@ pipeline {
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
         kube_IP = "172.31.42.5"
     }
+   
+    node {
+    cloud 'kubernetes' // Name configured in step 1
+    // ... your pipeline stages here
+        }
 
     stages {
         stage("Sonar Quality Check") {
@@ -82,9 +87,6 @@ pipeline {
 
         stage('Deploying Application on K8s Cluster') {
             steps {
-                     node {
-                            cloud 'kubernetes'
-                          }
                      script {
                         dir('kubernetes/') {
                         def kubectl = kubernetesEnv.kubectl // Use Kubernetes plugin environment variable 
