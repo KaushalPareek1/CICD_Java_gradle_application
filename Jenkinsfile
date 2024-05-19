@@ -83,8 +83,12 @@ pipeline {
         stage('Deploying Application on K8s Cluster') {
             steps {
                 script {
-                    dir('kubernetes/') {
-                        kubeconfig(credentialsId: 'kubernetes-token', serverUrl: "https://${kube_IP}:443") {
+                         node {
+                               cloud 'kubernetes'
+                              }
+                        dir('kubernetes/') {
+                        def kubectl = kubernetesEnv.kubectl // Use Kubernetes plugin environment variable 
+                       {
                         sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/'
                        }
                     }
