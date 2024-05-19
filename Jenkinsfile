@@ -1,7 +1,27 @@
 pipeline {
-        agent {
-          kubernetes
-        environment {
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: maven
+    image: maven:3.6.3-jdk-8
+    command:
+    - cat
+  - name: docker
+    image: docker:19.03.12
+    command:
+    - cat
+  - name: helm
+    image: alpine/helm:3.2.1
+    command:
+    - cat
+"""
+        }
+    }
+    environment {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "my-docker-registry:5000" // Replace with your actual registry address
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
@@ -84,7 +104,7 @@ pipeline {
                                 def helmVersion = sh(script: "helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' '", returnStdout: true).trim()
                                 sh """
                                     tar -czvf myapp-${helmVersion}.tgz myapp/
-                                    curl -u ${NEXUS_USER}:${NEXUS_PASSWORD} -v -X POST http://${IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
+                                    curl -u ${NEXUS_USER}:${NEXUS_PASSWORD} -v -X POST http://${kube_IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
                                     rm myapp-${helmVersion}.tgz
                                 """
                             }
@@ -119,4 +139,3 @@ pipeline {
         }
     }
 }
-
