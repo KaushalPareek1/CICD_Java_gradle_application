@@ -10,14 +10,17 @@ spec:
     image: maven:3.6.3-jdk-8
     command:
     - cat
+    tty: true
   - name: docker
     image: docker:19.03.12
     command:
     - cat
+    tty: true
   - name: helm
     image: alpine/helm:3.2.1
     command:
     - cat
+    tty: true
 """
         }
     }
@@ -28,10 +31,12 @@ spec:
         kube_IP = "172.31.42.5"
     }
     stages {
-        stage('Debug DNS') {
+        stage('Debug Pod') {
             steps {
                 container('maven') {
-                    sh 'nslookup github.com || dig github.com'
+                    sh 'echo "Debugging pod..."'
+                    sh 'env'
+                    sh 'kubectl get pods'
                 }
             }
         }
