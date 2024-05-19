@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         VERSION = "${env.BUILD_ID}"
-        IP = "13.233.120.38"
+        IP = "13.232.197.210"
         DOCKER_REGISTRY = "${IP}:8083"  // Replace with your actual registry address
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
-        kube_IP = "kubernetes IP"
+        kube_IP = "172.31.42.5"
     }
 
     stages {
