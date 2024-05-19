@@ -82,10 +82,10 @@ pipeline {
 
         stage('Deploying Application on K8s Cluster') {
             steps {
-                script {
-                         node {
-                               cloud 'kubernetes'
-                              }
+                     node {
+                            cloud 'kubernetes'
+                          }
+                     script {
                         dir('kubernetes/') {
                         def kubectl = kubernetesEnv.kubectl // Use Kubernetes plugin environment variable 
                        {
