@@ -9,12 +9,7 @@ pipeline {
         kube_IP = "172.31.42.5"
     }
    
-    node {
-    cloud 'kubernetes' // Name configured in step 1
-    // ... your pipeline stages here
-        }
-
-    stages {
+     stages {
         stage("Sonar Quality Check") {
             agent {
                 docker { image 'openjdk:11' }
@@ -87,21 +82,26 @@ pipeline {
 
         stage('Deploying Application on K8s Cluster') {
             steps {
-                     script {
+                script {
+                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${kube_IP}:6443"]) {
                         dir('kubernetes/') {
-                        def kubectl = kubernetesEnv.kubectl // Use Kubernetes plugin environment variable 
-                       {
-                        sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/'
-                       }
+                            sh '''
+                                helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/
+                            '''
+                        }
                     }
                 }
             }
         }
     }
-  post {
-    always {
-      mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
-    }
-  }
-}
 
+    post {
+        always {
+            mail bcc: '', body: """
+                <br>Project: ${env.JOB_NAME}
+                <br>Build Number: ${env.BUILD_NUMBER}
+                <br>URL: ${env.BUILD_URL}
+            """, cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com"
+        }
+    }
+}
