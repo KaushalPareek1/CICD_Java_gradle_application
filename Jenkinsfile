@@ -84,7 +84,7 @@ pipeline {
             steps {
                 script {
                     dir('kubernetes/') {
-                        kubeconfig(credentialsId: 'kubernetes-token', serverUrl: 'https://${kube_IP}:8443') {
+                        kubeconfig(credentialsId: 'kubernetes-token', serverUrl: 'https://${kube_IP}:6443') {
                             sh 'helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myjavaapp myapp/'
                         }
                     }
