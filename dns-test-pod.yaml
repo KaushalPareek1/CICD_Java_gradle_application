@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dns-test
+  namespace: jenkins
+spec:
+  containers:
+  - name: dns-test
+    image: busybox
+    command:
+    - sleep
+    - "3600"
+

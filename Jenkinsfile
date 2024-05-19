@@ -6,6 +6,9 @@ pipeline {
             yaml """
             apiVersion: v1
             kind: Pod
+            metadata:
+              name: jenkins-slave
+              namespace: jenkins
             spec:
               containers:
               - name: maven
@@ -13,24 +16,74 @@ pipeline {
                 command:
                 - cat
                 tty: true
+                volumeMounts:
+                - mountPath: "/home/jenkins/agent"
+                  name: "workspace-volume"
+                  readOnly: false
               - name: docker
                 image: docker:latest
                 command:
                 - cat
                 tty: true
+                volumeMounts:
+                - mountPath: "/home/jenkins/agent"
+                  name: "workspace-volume"
+                  readOnly: false
               - name: helm
                 image: alpine/helm:3.5.4
                 command:
                 - cat
                 tty: true
-            dnsPolicy: ClusterFirst
-            dnsConfig:
-              nameservers:
-              - 8.8.8.8
-              - 8.8.4.4
+                volumeMounts:
+                - mountPath: "/home/jenkins/agent"
+                  name: "workspace-volume"
+                  readOnly: false
+              - name: jnlp
+                image: jenkins/inbound-agent:3206.vb_15dcf73f6a_9-2
+                env:
+                - name: JENKINS_SECRET
+                  value: "********"
+                - name: JENKINS_AGENT_NAME
+                  value: "jenkins-slave"
+                - name: JENKINS_WEB_SOCKET
+                  value: "true"
+                - name: JENKINS_NAME
+                  value: "jenkins-slave"
+                - name: JENKINS_AGENT_WORKDIR
+                  value: "/home/jenkins/agent"
+                - name: JENKINS_URL
+                  value: "http://13.232.197.210:8080/"
+                resources:
+                  requests:
+                    memory: "256Mi"
+                    cpu: "100m"
+                volumeMounts:
+                - mountPath: "/home/jenkins/agent"
+                  name: "workspace-volume"
+                  readOnly: false
+              nodeSelector:
+                kubernetes.io/os: "linux"
+              restartPolicy: "Never"
+              volumes:
+              - emptyDir:
+                  medium: ""
+                name: "workspace-volume"
+              dnsPolicy: "ClusterFirst"
+              dnsConfig:
+                nameservers:
+                - "8.8.8.8"
+                - "8.8.4.4"
             """
         }
     }
+    stages {
+        stage('Debug DNS') {
+            steps {
+                container('maven') {
+                    sh 'nslookup github.com || dig github.com'
+                }
+            }
+        }
     environment {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "my-docker-registry:5000" // Replace with your actual registry address
