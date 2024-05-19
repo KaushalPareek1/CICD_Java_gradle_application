@@ -1,12 +1,13 @@
-pipeline{
-    agent any 
+pipeline {
+    agent any
     environment {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "my-docker-registry:5000" // Replace with your actual registry address
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
         kube_IP = "172.31.42.5"
     }
-      stage('Sonar Quality Check') {
+    stages {
+        stage('Sonar Quality Check') {
             steps {
                 container('maven') {
                     script {
@@ -69,7 +70,16 @@ pipeline{
                 }
             }
         }
-
+        stage('manual approval'){
+            steps{
+                script{
+                    timeout(10) {
+                        mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> Go to build url and approve the deployment request <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
+                        input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+                    }
+                }
+            }
+        }
         stage('Deploying Application on K8s Cluster') {
             steps {
                 container('helm') {
