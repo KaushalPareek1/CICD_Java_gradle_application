@@ -63,7 +63,7 @@ pipeline {
                             def helmVersion = sh(script: "helm show chart kubernetes/myapp | grep version | cut -d: -f 2 | tr -d ' '", returnStdout: true).trim()
                             sh """
                                 tar -czvf myapp-${helmVersion}.tgz kubernetes/myapp/
-                                curl -u ${NEXUS_USER}:${NEXUS_PASSWORD} -v -X POST http://${kube_IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
+                                curl -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -v -X POST http://${kube_IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
                                 rm myapp-${helmVersion}.tgz
                             """
                         }
