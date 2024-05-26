@@ -1,51 +1,64 @@
 pipeline {
     agent any
+
     environment {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "13.201.126.141:8083"
         KUBE_TOKEN = credentials('kubernetes-token')
         kube_IP = "13.201.126.141"
     }
-     stages{
-        stage("Code"){
-            steps{
-                git url: "https://github.com/KaushalPareek1/CICD_Java_gradle_application.git", branch: "main"
-            }
-        }
-    stages {
-        stage('Sonar Quality Check') {
-            steps {
-                container('maven') {
-                    withSonarQubeEnv('sonar-token') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
-            }
-        }
 
-        stage('Docker Build & Push') {
-            steps {
-                container('docker') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        script {
-                            try {
-                                sh "docker build -t ${DOCKER_REGISTRY}/myapp:${VERSION} ."
-                                sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}"
-                                sh "docker push ${DOCKER_REGISTRY}/myapp:${VERSION}"
-                                sh "docker rmi ${DOCKER_REGISTRY}/myapp:${VERSION}"
-                            } catch (Exception e) {
-                                error "Failed to build and push Docker image: ${e.message}"
-                            }
-                        }
-                    }
-                }
+
+    stages {
+    stage("Sonar Quality Check") {
+      agent {
+        docker { image 'openjdk:11' }
+      }
+      steps {
+        script {
+          withSonarQubeEnv(credentialsId: 'sonar-token') {
+            sh 'chmod +x gradlew'
+            sh './gradlew sonarqube'
+          }
+          timeout(time: 1, unit: 'HOURS') {
+            def qg = waitForQualityGate()
+            if (qg.status != 'OK') {
+              error "Pipeline aborted due to quality gate failure: ${qg.status}"
             }
+          }
         }
-        
-          stage('Identifying Misconfigs Using Datree in Helm Charts') {
-            steps {
-                container('helm') {
-                    sh 'helm datree test kubernetes/myapp/'
+      }
+    }
+
+    stage("Docker Build & Push") {
+      steps {
+        script {
+          withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+            sh '''
+              docker build -t ${DOCKER_REGISTRY}/springapp:${VERSION} .
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
+              docker push ${DOCKER_REGISTRY}/springapp:${VERSION}
+              docker rmi ${DOCKER_REGISTRY}/springapp:${VERSION}
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Identifying Misconfigs Using Datree in Helm Charts') { // Corrected stage name
+      steps {
+        script {
+          dir('kubernetes/') {
+            sh 'helm datree test myapp/'
+          }
+        }
+      }
+    }
+  
+     stage('Identifying Misconfigs Using Datree in Helm Charts') {
+          steps {
+              container('helm') {
+                  sh 'helm datree test kubernetes/myapp/'
                 }
             }
         }
@@ -66,16 +79,16 @@ pipeline {
                 }
             }
         }
-
-        stage('Manual Approval') {
+     
+     stage('Deploying Application on K8s Cluster') {
             steps {
-                script {
-                    timeout(time: 10, unit: 'SECONDS') {
-                        mail to: 'kaushalpareek93@gmail.com',
-                            subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
-                            body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> Go to build url and approve the deployment request <br> URL de build: ${env.BUILD_URL}",
-                            mimeType: 'text/html'
-                        input id: 'Deploy_Gate', message: "Deploy ${params.project_name}?", ok: 'Deploy'
+                container('helm') {
+                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${kube_IP}:6443"]) {
+                        dir('kubernetes/') {
+                            sh '''
+                                helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/myapp" --set image.tag="${VERSION}" myapp myapp/
+                            '''
+                        }
                     }
                 }
             }
