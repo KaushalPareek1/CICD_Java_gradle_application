@@ -68,7 +68,7 @@ pipeline {
             }
         }
 
-    post {
+   post {
         always {
             mail bcc: '', body: """
                 <br>Project: ${env.JOB_NAME}
@@ -78,4 +78,3 @@ pipeline {
         }
     }
 }
-
