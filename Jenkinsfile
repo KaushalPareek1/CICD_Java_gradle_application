@@ -2,9 +2,9 @@ pipeline {
     agent any
     environment {
         VERSION = "${env.BUILD_ID}"
-        DOCKER_REGISTRY = "my-docker-registry:5000" // Replace with your actual registry address
+        DOCKER_REGISTRY = "13.201.126.141:8083" // Replace with your actual registry address
         KUBE_TOKEN = credentials('kubernetes-token') // Retrieving Kubernetes token from credentials
-        kube_IP = "172.31.42.5"
+        kube_IP = "13.201.126.141"
     }
     stages {
         stage('Sonar Quality Check') {
