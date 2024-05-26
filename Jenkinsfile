@@ -5,7 +5,7 @@ pipeline {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "13.201.126.141:8083"
         KUBE_TOKEN = credentials('kubernetes-token')
-        kube_IP = "13.201.126.141"
+        IP = "13.201.126.141"
     }
 
 
@@ -63,7 +63,7 @@ pipeline {
                             def helmVersion = sh(script: "helm show chart kubernetes/myapp | grep version | cut -d: -f 2 | tr -d ' '", returnStdout: true).trim()
                             sh """
                                 tar -czvf myapp-${helmVersion}.tgz kubernetes/myapp/
-                                curl -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} -v -X POST http://${kube_IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
+                                curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
                                 rm myapp-${helmVersion}.tgz
                             """
                         }
@@ -75,7 +75,7 @@ pipeline {
      stage('Deploying Application on K8s Cluster') {
             steps {
                 container('helm') {
-                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${kube_IP}:6443"]) {
+                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${IP}:6443"]) {
                         dir('kubernetes/') {
                             sh '''
                                 helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/myapp" --set image.tag="${VERSION}" myapp myapp/
