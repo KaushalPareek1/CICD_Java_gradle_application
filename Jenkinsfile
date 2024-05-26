@@ -68,19 +68,6 @@ pipeline {
             }
         }
 
-        stage('Deploying Application on K8s Cluster') {
-            steps {
-                container('helm') {
-                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${kube_IP}:6443"]) {
-                        sh '''
-                            helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/myapp" --set image.tag="${VERSION}" myapp kubernetes/myapp/
-                        '''
-                    }
-                }
-            }
-        }
-    }
-
     post {
         always {
             mail bcc: '', body: """
