@@ -6,6 +6,12 @@ pipeline {
         KUBE_TOKEN = credentials('kubernetes-token')
         kube_IP = "13.201.126.141"
     }
+     stages{
+        stage("Code"){
+            steps{
+                git url: "https://github.com/KaushalPareek1/CICD_Java_gradle_application.git", branch: "main"
+            }
+        }
     stages {
         stage('Sonar Quality Check') {
             steps {
