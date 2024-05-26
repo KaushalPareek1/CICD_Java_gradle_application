@@ -77,4 +77,5 @@ pipeline {
             """, cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "your-email@example.com"
         }
     }
-}
+  }
+}    
