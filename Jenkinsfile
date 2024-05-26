@@ -22,17 +22,21 @@ pipeline {
                 container('docker') {
                     withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
                         script {
-                            sh "docker build -t ${DOCKER_REGISTRY}/myapp:${VERSION} ."
-                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}"
-                            sh "docker push ${DOCKER_REGISTRY}/myapp:${VERSION}"
-                            sh "docker rmi ${DOCKER_REGISTRY}/myapp:${VERSION}"
+                            try {
+                                sh "docker build -t ${DOCKER_REGISTRY}/myapp:${VERSION} ."
+                                sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}"
+                                sh "docker push ${DOCKER_REGISTRY}/myapp:${VERSION}"
+                                sh "docker rmi ${DOCKER_REGISTRY}/myapp:${VERSION}"
+                            } catch (Exception e) {
+                                error "Failed to build and push Docker image: ${e.message}"
+                            }
                         }
                     }
                 }
             }
         }
-
-        stage('Identifying Misconfigs Using Datree in Helm Charts') {
+        
+          stage('Identifying Misconfigs Using Datree in Helm Charts') {
             steps {
                 container('helm') {
                     sh 'helm datree test kubernetes/myapp/'
