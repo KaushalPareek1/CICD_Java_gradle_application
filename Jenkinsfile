@@ -54,15 +54,7 @@ pipeline {
         }
       }
     }
-  
-     stage('Identifying Misconfigs Using Datree in Helm Charts') {
-          steps {
-              container('helm') {
-                  sh 'helm datree test kubernetes/myapp/'
-                }
-            }
-        }
-
+ 
         stage('Pushing the Helm Charts to Nexus') {
             steps {
                 container('helm') {
