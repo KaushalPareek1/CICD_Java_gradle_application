@@ -21,12 +21,12 @@ pipeline {
             steps {
                 container('docker') {
                     withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh '''
-                            docker build -t ${DOCKER_REGISTRY}/myapp:${VERSION} .
-                            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
-                            docker push ${DOCKER_REGISTRY}/myapp:${VERSION}
-                            docker rmi ${DOCKER_REGISTRY}/myapp:${VERSION}
-                        '''
+                        script {
+                            sh "docker build -t ${DOCKER_REGISTRY}/myapp:${VERSION} ."
+                            sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}"
+                            sh "docker push ${DOCKER_REGISTRY}/myapp:${VERSION}"
+                            sh "docker rmi ${DOCKER_REGISTRY}/myapp:${VERSION}"
+                        }
                     }
                 }
             }
@@ -57,25 +57,31 @@ pipeline {
             }
         }
 
-        stage('Manual Approval'){
-            steps{
-                script{
+        stage('Manual Approval') {
+            steps {
+                script {
                     timeout(time: 10, unit: 'SECONDS') {
-                        mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> Go to build url and approve the deployment request <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";  
-                        input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+                        mail to: 'kaushalpareek93@gmail.com',
+                            subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
+                            body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> Go to build url and approve the deployment request <br> URL de build: ${env.BUILD_URL}",
+                            mimeType: 'text/html'
+                        input id: 'Deploy_Gate', message: "Deploy ${params.project_name}?", ok: 'Deploy'
                     }
                 }
             }
         }
+    }
 
-   post {
+    post {
         always {
-            mail bcc: '', body: """
-                <br>Project: ${env.JOB_NAME}
-                <br>Build Number: ${env.BUILD_NUMBER}
-                <br>URL: ${env.BUILD_URL}
-            """, cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "your-email@example.com"
+            mail to: "your-email@example.com",
+                subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
+                body: """
+                    <br>Project: ${env.JOB_NAME}
+                    <br>Build Number: ${env.BUILD_NUMBER}
+                    <br>URL: ${env.BUILD_URL}
+                """,
+                mimeType: 'text/html'
         }
     }
-  }
-}    
+}
