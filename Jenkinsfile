@@ -5,7 +5,7 @@ pipeline {
         VERSION = "${env.BUILD_ID}"
         DOCKER_REGISTRY = "13.201.126.141:8083"
         KUBE_TOKEN = credentials('kubernetes-token')
-        IP = "13.201.126.141"
+        IP = "3.6.93.195"
     }
 
 
