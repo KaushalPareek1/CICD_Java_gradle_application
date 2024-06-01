@@ -54,24 +54,32 @@ pipeline {
         }
       }
     }
- 
-        stage('Pushing the Helm Charts to Nexus') {
-            steps {
-                container('helm') {
-                    withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        script {
-                            def helmVersion = sh(script: "helm show chart kubernetes/myapp | grep version | cut -d: -f 2 | tr -d ' '", returnStdout: true).trim()
-                            sh """
-                                tar -czvf myapp-${helmVersion}.tgz kubernetes/myapp/
-                                curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmVersion}.tgz
-                                rm myapp-${helmVersion}.tgz
-                            """
-                        }
-                    }
+     stage('pushing the helm charts to nexus'){
+      steps{
+        script{
+          withCredentials([usernamePassword(credentialsId: 'docker-host', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
+            dir('kubernetes/') {
+             sh '''
+              helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
+              tar -czvf myapp-${helmversion}.tgz myapp/
+              # Check for successful login before pushing
+              if docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}; then
+              curl -u ${DOCKER_USER}:${DOCKER_PASSWORD} -v -X POST http://${IP}:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz
+              echo 'Helm chart uploaded successfully!'
+              else
+              echo 'Docker login failed!'
+              echo 'Helm chart upload failed!'
+              # Handle upload failure here (e.g., error notification)
+              fi
+              rm myapp-${helmversion}.tgz
+              '''
+
                 }
-            }
-        }
-     
+             }
+          }
+       }
+    }
+ 
      stage('Deploying Application on K8s Cluster') {
             steps {
                 container('helm') {
@@ -85,18 +93,9 @@ pipeline {
                 }
             }
         }
-    }
-
-    post {
-        always {
-            mail to: "your-email@example.com",
-                subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}",
-                body: """
-                    <br>Project: ${env.JOB_NAME}
-                    <br>Build Number: ${env.BUILD_NUMBER}
-                    <br>URL: ${env.BUILD_URL}
-                """,
-                mimeType: 'text/html'
+           post {
+             always {
+               mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com";    
         }
     }
 }
