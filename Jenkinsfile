@@ -77,10 +77,10 @@ pipeline {
             }
         }
 
-        stage('Deploying Application on K8s Cluster') {
+         stage('Deploying Application on K8s Cluster') {
             steps {
                 script {
-                    withKubeConfig([credentialsId: 'kubernetes-token', serverUrl: "https://${IP}:6443"]) {
+                    withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
                         dir('kubernetes/') {
                             sh '''
                                 helm upgrade --install --set image.repository="${DOCKER_REGISTRY}/springapp" --set image.tag="${VERSION}" myapp myapp/
@@ -91,6 +91,7 @@ pipeline {
             }
         }
     }
+
 
     post {
         always {
