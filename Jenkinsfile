@@ -109,12 +109,19 @@ pipeline {
             }
         }
 
-        stage('Verifying App Deployment') {
+         stage('Verifying App Deployment') {
             steps {
                 script {
                     withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
                         // Wait for the deployment to be ready
-                        sh 'kubectl rollout status deployment/myapp --timeout=300s'
+                        sh 'kubectl rollout status deployment/myapp --timeout=600s'
+
+                        // Check pod status
+                        sh 'kubectl get pods -l app=myapp'
+
+                        // Describe the pods
+                        sh 'kubectl describe pods -l app=myapp'
+                        
                         // Use fully qualified domain name
                         sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myapp.default.svc.cluster.local:8080'
                     }
@@ -122,6 +129,7 @@ pipeline {
             }
         }
     }
+
 
     post {
         always {
