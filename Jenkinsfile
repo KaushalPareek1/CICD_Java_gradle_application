@@ -76,7 +76,7 @@ pipeline {
             }
         }
 
-         stage('Manual Approval') {
+        stage('Manual Approval') {
             steps {
                 script {
                     timeout(time: 10, unit: 'MINUTES') {
@@ -113,7 +113,10 @@ pipeline {
             steps {
                 script {
                     withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
-                        sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myjavaapp-myapp:8080'
+                        // Wait for the deployment to be ready
+                        sh 'kubectl rollout status deployment/myapp --timeout=300s'
+                        // Use fully qualified domain name
+                        sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myapp.default.svc.cluster.local:8080'
                     }
                 }
             }
