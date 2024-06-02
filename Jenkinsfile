@@ -76,7 +76,7 @@ pipeline {
             }
         }
 
-        stage('Manual Approval') {
+         stage('Manual Approval') {
             steps {
                 script {
                     timeout(time: 10, unit: 'MINUTES') {
@@ -89,7 +89,7 @@ pipeline {
                              replyTo: '', 
                              subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", 
                              to: "kaushalpareek93@gmail.com"
-                        input(id: "Deploy Gate", message: "Deploy ${env.JOB_NAME}?", ok: 'Deploy')
+                        input(id: "DeployGate", message: "Deploy ${env.JOB_NAME}?", ok: 'Deploy')
                     }
                 }
             }
