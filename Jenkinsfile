@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VERSION = "${env.BUILD_ID}"
-        IP = "65.0.104.80"
+        IP = "13.233.223.130"
         DOCKER_REGISTRY = "${IP}:8083"
     }
 
