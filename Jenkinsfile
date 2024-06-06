@@ -109,28 +109,26 @@ pipeline {
             }
         }
 
-         stage('Verifying App Deployment') {
-            steps {
-                script {
-                    withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
-                        // Wait for the deployment to be ready
-                        sh 'kubectl rollout status deployment/myapp --timeout=600s'
+         stage('Verifying Application Deployment') {
+  steps {
+    script {
+      withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
+        sh '''
+          # Check pod status
+          kubectl get pods | grep myapp
 
-                        // Check pod status
-                        sh 'kubectl get pods -l app=myapp'
+          # Verify deployment status
+          kubectl get deployments myapp
 
-                        // Describe the pods
-                        sh 'kubectl describe pods -l app=myapp'
-                        
-                        // Use fully qualified domain name
-                        sh 'kubectl run curl --image=curlimages/curl -i --rm --restart=Never -- curl myapp.default.svc.cluster.local:8080'
-                    }
-                }
-            }
-        }
+          # Check service readiness
+          kubectl get services myapp
+
+          # Additional health checks or application tests (if applicable)
+        '''
+      }
     }
-
-
+  }
+}
     post {
         always {
             mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com"
