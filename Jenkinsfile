@@ -110,25 +110,25 @@ pipeline {
         }
 
          stage('Verifying Application Deployment') {
-  steps {
-    script {
-      withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
-        sh '''
-          # Check pod status
-          kubectl get pods | grep myapp
-
-          # Verify deployment status
-          kubectl get deployments myapp
-
-          # Check service readiness
-          kubectl get services myapp
-
-          # Additional health checks or application tests (if applicable)
-        '''
+              steps {
+                script {
+                  withKubeConfig([credentialsId: 'jenkins-kubeconfig']) {
+                    sh '''
+                      # Check pod status
+                      kubectl get pods | grep myapp
+            
+                      # Verify deployment status
+                      kubectl get deployments myapp
+            
+                      # Check service readiness
+                      kubectl get services myapp
+            
+                      # Additional health checks or application tests (if applicable)
+                    '''
+                  }
+            }
       }
-    }
-  }
-}
+ }
     post {
         always {
             mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "kaushalpareek93@gmail.com"
